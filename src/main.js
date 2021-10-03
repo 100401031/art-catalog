@@ -18,6 +18,7 @@ import 'primevue/resources/themes/md-dark-indigo/theme.css';
 import 'primevue/resources/primevue.min.css';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
+import '@/assets/css/index.scss';
 
 const app = createApp({});
 

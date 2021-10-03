@@ -272,26 +272,3 @@ export default {
   pointer-events: none;
 }
 </style>
-
-<style lang="scss">
-html {
-  background-color: var(--surface-b);
-}
-body {
-  margin: 0;
-}
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: var(--text-color);
-}
-a {
-  text-decoration: none;
-  &:active,
-  &:visited {
-    color: var(--text-color);
-  }
-}
-</style>
