@@ -1,4 +1,4 @@
-# art-catalog
+# Skill Test - Art Catalog
 
 ### Step1. Build docker image
 
