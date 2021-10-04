@@ -18,7 +18,7 @@
       </template>
     </Nav>
     <div class="list-container p-grid">
-      <template v-for="artwork in artWorks" :key="artwork.id">
+      <template v-for="artwork in artworksData.artworks" :key="artwork.id">
         <div class="p-col-12 p-md-6 p-lg-3">
           <Card class="artwork-card">
             <template #header>
@@ -60,7 +60,7 @@
               </div>
             </template>
             <template #footer>
-              <router-link :to="`/artwork/${artwork.id}`" target="_blank">
+              <router-link :to="`/artwork/${artwork.id}`">
                 <Button
                   icon="pi pi-external-link"
                   label="More"
@@ -75,8 +75,12 @@
     </div>
     <Paginator
       ref="paginator"
-      v-model:rows="paginator.rows"
-      :totalRecords="pagination.total > 1000 ? 1000 : pagination.total"
+      v-model:rows="artworksData.listRows"
+      :totalRecords="
+        artworksData.pagination.total > 1000
+          ? 1000
+          : artworksData.pagination.total
+      "
       template="PrevPageLink PageLinks NextPageLink CurrentPageReport"
       currentPageReportTemplate="{currentPage} of {totalPages}"
       :class="{ disabled: loading }"
@@ -97,71 +101,43 @@ export default {
   components: { Nav },
   data() {
     return {
-      config: null,
-      artWorks: [
-        { id: 'placeholder_1' },
-        { id: 'placeholder_2' },
-        { id: 'placeholder_3' },
-        { id: 'placeholder_4' },
-      ],
-      info: {},
-      pagination: {},
-      paginator: {
-        currentPage: 1,
-        rows: 20,
-      },
       searchInput: '',
-      searchKeyword: '',
-      lastPage: null,
-      loading: true,
+      loading: false,
     };
   },
+  computed: {
+    artworksData() {
+      return this.$store.state.artworks;
+    },
+  },
   mounted() {
-    this.getArtWorksList();
+    if (this.artworksData.pageState === 'INITIAL') {
+      this.getArtWorksList();
+    }
+    this.handlePaginatorState();
   },
   methods: {
-    async getConfig() {
-      const api = 'https://api.artic.edu/api/v1/artworks?limit=0&fields=id';
-      const { data: resData } = await this.axios.get(api);
-      this.config = resData.config;
+    getConfig() {
+      this.$store.dispatch('artworks/getConfig');
     },
     search(e) {
       if (this.loading) return;
-      this.searchKeyword = this.searchInput;
-      this.getArtWorksList(null, this.searchKeyword);
+
+      this.$store.dispatch('artworks/setSearchKeyword', {
+        searchKeyword: this.searchInput,
+      });
+      // this.searchKeyword = this.searchInput;
+      this.getArtWorksList(null, this.artworksData.searchKeyword);
 
       this.$refs.paginator.changePageToFirst(e);
     },
     async getArtWorksList(page = 1, keyword) {
-      if (!this.config) {
+      this.loading = true;
+      if (!this.artworksData.config) {
         await this.getConfig();
       }
-      const apiQueryObj = {
-        limit: this.paginator.rows,
-        fields: ['id', 'title', 'image_id', 'artist_display'],
-      };
-      if (keyword) {
-        apiQueryObj.params = JSON.stringify({ q: keyword });
-      }
-      if (page) {
-        apiQueryObj.page = page;
-      }
-
-      const expandUrl = new URLSearchParams(apiQueryObj).toString();
-      const apiUrl = keyword
-        ? `https://api.artic.edu/api/v1/artworks/search?${expandUrl}`
-        : `https://api.artic.edu/api/v1/artworks?${expandUrl}`;
-
-      this.loading = true;
       try {
-        const { data: resData } = await this.axios.get(apiUrl);
-        if (resData.config) {
-          this.config = resData.config;
-        }
-        this.artWorks = resData.data;
-        this.info = resData.info;
-        this.pagination = resData.pagination;
-        this.lastPage = page;
+        await this.$store.dispatch('artworks/getArtworks', { page, keyword });
       } catch (e) {
         if (e.response.status === 403) {
           this.$toast.add({
@@ -170,20 +146,34 @@ export default {
             detail: `The resources of page ${page} are unavailable.`,
             life: 10000,
           });
-          this.$refs.paginator.changePage(this.lastPage - 1);
+          this.$refs.paginator.changePage(this.artworksData.lastPage - 1);
         }
         1;
       }
-
       this.loading = false;
     },
     genImgUrl(imgId) {
-      return `${this.config.iiif_url}/${imgId}/full/843,/0/default.jpg`;
+      return `${this.artworksData.config.iiif_url}/${imgId}/full/843,/0/default.jpg`;
     },
     onPage(e) {
-      if (this.loading || e.page + 1 === this.paginator.currentPage) return;
-      this.getArtWorksList(e.page + 1, this.searchKeyword);
-      this.paginator.currentPage = e.page + 1;
+      if (this.loading || e.page + 1 === this.artworksData.currentPage) return;
+      this.getArtWorksList(e.page + 1, this.artworksData.searchKeyword);
+
+      this.$store.dispatch('artworks/setCurrentPage', {
+        currentPage: e.page + 1,
+      });
+    },
+    handlePaginatorState() {
+      if (this.artworksData.currentPage > 1) {
+        this.setPage(this.artworksData.currentPage);
+      }
+
+      if (this.artworksData.searchKeyword) {
+        this.searchInput = this.artworksData.searchKeyword;
+      }
+    },
+    setPage(page) {
+      this.$refs.paginator.changePage(page - 1);
     },
   },
 };

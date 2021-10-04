@@ -3,6 +3,7 @@ import axios from 'axios';
 import VueAxios from 'vue-axios';
 import Router from '@/router';
 import ToastService from 'primevue/toastservice';
+import Store from './store';
 
 import PrimeVue from 'primevue/config';
 import Button from 'primevue/button';
@@ -30,6 +31,7 @@ app.use(Router);
 app.use(VueAxios, axios);
 app.use(PrimeVue);
 app.use(ToastService);
+app.use(Store);
 
 app.component('Button', Button);
 app.component('Card', Card);
