@@ -22,3 +22,9 @@ Therefore, the paginator will be invalid for users if the page number is beyond 
 
 **Solution:** The total number of records will be regarded as 1,000 if it is greater than 1,000. So the paginator will always show the available pages.
 
+### 2. When go to single artwork page, the search result and pagination will be reset.
+
+**Solution:** use vuex to manage the states.
+
+
+
