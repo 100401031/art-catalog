@@ -117,8 +117,8 @@ export default {
     this.handlePaginatorState();
   },
   methods: {
-    getConfig() {
-      this.$store.dispatch('artworks/getConfig');
+    async getConfig() {
+      await this.$store.dispatch('artworks/getConfig');
     },
     search(e) {
       if (this.loading) return;
@@ -126,16 +126,17 @@ export default {
       this.$store.dispatch('artworks/setSearchKeyword', {
         searchKeyword: this.searchInput,
       });
-      // this.searchKeyword = this.searchInput;
       this.getArtWorksList(null, this.artworksData.searchKeyword);
 
       this.$refs.paginator.changePageToFirst(e);
     },
     async getArtWorksList(page = 1, keyword) {
       this.loading = true;
+
       if (!this.artworksData.config) {
         await this.getConfig();
       }
+
       try {
         await this.$store.dispatch('artworks/getArtworks', { page, keyword });
       } catch (e) {
