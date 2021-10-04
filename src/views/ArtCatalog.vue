@@ -76,7 +76,7 @@
     <Paginator
       ref="paginator"
       v-model:rows="paginator.rows"
-      :totalRecords="pagination.total"
+      :totalRecords="pagination.total > 1000 ? 1000 : pagination.total"
       template="PrevPageLink PageLinks NextPageLink CurrentPageReport"
       currentPageReportTemplate="{currentPage} of {totalPages}"
       :class="{ disabled: loading }"
@@ -108,7 +108,7 @@ export default {
       pagination: {},
       paginator: {
         currentPage: 1,
-        rows: 12,
+        rows: 20,
       },
       searchInput: '',
       searchKeyword: '',
